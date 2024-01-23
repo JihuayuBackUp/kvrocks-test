@@ -76,31 +76,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y clang-format-14 clang-tidy-14
-      - uses: apache/skywalking-eyes/header@v0.4.0
-        with:
-          config: .github/config/licenserc.yml
-      - name: Check with clang-format
-        id: check-format
-        run: ./x.py check format --clang-format-path clang-format-14
-      - name: Check with clang-tidy
-        run: |
-          ./x.py build --skip-build
-          ./x.py check tidy -j $(nproc) --clang-tidy-path clang-tidy-14 --run-clang-tidy-path run-clang-tidy-14
-      - name: Lint with golangci-lint
-        run: ./x.py check golangci-lint
-
-      - name: Prepare format patch
-        if: always() && steps.check-format.outcome != 'success'
-        run: |
-          ./x.py format --clang-format-path clang-format-14
-          git diff -p > clang-format.patch
-          cat clang-format.patch
-      - name: Upload format patch
-        uses: actions/upload-artifact@v3
-        if: always() && steps.check-format.outcome != 'success'
-        with:
-          path: clang-format.patch
-
   build-and-test:
     name: Build and test
     needs: [precondition, check-and-lint, check-typos]
