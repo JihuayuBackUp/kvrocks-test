@@ -66,13 +66,7 @@ jobs:
       - name: Configure Kvrocks
         run: |
           ./x.py build -j$(nproc) --compiler gcc --skip-build
-      - name: print
-        run: | 
-          echo ${{ github.event.workflow_run.pull_requests[0].number }}
-          echo ${{ github.event.workflow_run.pull_requests[0].head }}
-          echo ${{ github.event.workflow_run.pull_requests[0].head.ref }}
-          echo ${{ github.event.workflow_run.pull_requests[0].base.ref }}
-          
+
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -86,8 +80,4 @@ jobs:
             --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }} \
             --define sonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }} \
             --define sonar.pullrequest.branch=${{ github.event.workflow_run.pull_requests[0].head.ref }} \
-            --define sonar.pullrequest.base=${{ github.event.workflow_run.pull_requests[0].base.ref }} \
-      - name: Setup upterm session
-        if: always()
-        uses: lhotari/action-upterm@v1
-        
+            --define sonar.pullrequest.base=${{ github.event.workflow_run.pull_requests[0].base.ref }} 
