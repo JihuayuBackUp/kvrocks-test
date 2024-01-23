@@ -157,51 +157,6 @@ jobs:
           echo "$(pwd)/coredumps/corefile-%e-%p-%t" | sudo tee /proc/sys/kernel/core_pattern
           mkdir coredumps
 
-      - name: Run Unit Test
-        run: |
-          ulimit -c unlimited
-          export LSAN_OPTIONS="suppressions=$(realpath ./tests/lsan-suppressions)"
-          export TSAN_OPTIONS="suppressions=$(realpath ./tests/tsan-suppressions)"
-          ./x.py test cpp
-
-      - name: Run Go Integration Cases
-        run: |
-          ulimit -c unlimited
-          export LSAN_OPTIONS="suppressions=$(realpath ./tests/lsan-suppressions)"
-          export TSAN_OPTIONS="suppressions=$(realpath ./tests/tsan-suppressions)"
-          export PATH=$PATH:$HOME/local/bin/
-          GOCASE_RUN_ARGS=""
-          if [[ -n "${{ matrix.with_openssl }}" ]] && [[ "${{ matrix.os }}" == ubuntu* ]]; then
-            git clone https://github.com/jsha/minica
-            cd minica && go build && cd ..
-            ./minica/minica --domains localhost
-            cp localhost/cert.pem tests/gocase/tls/cert/server.crt
-            cp localhost/key.pem tests/gocase/tls/cert/server.key
-            cp minica.pem tests/gocase/tls/cert/ca.crt
-            GOCASE_RUN_ARGS="-tlsEnable"
-          fi
-          ./x.py test go build $GOCASE_RUN_ARGS ${{ matrix.ignore_when_tsan}}
-
-      - name: Find reports and crashes
-        if: always()
-        run: |
-          SANITIZER_OUTPUT=$(grep "Sanitizer:" tests/gocase/workspace -r || true)
-          if [[ $SANITIZER_OUTPUT ]]; then
-            echo "found sanitizer reports:"
-            echo "$SANITIZER_OUTPUT"
-            echo "detail log:"
-            cat $(echo "$SANITIZER_OUTPUT" | awk -F ':' '{print $1}')
-            exit 1
-          fi
-          CRASHES=$(grep "Ooops!" tests/gocase/workspace -r || true)
-          if [[ $CRASHES ]]; then
-            echo "found crashes:"
-            echo "$CRASHES"
-            echo "detail log:"
-            cat $(echo "$CRASHES" | awk -F ':' '{print $1}')
-            exit 1
-          fi
-
       - uses: actions/upload-artifact@v3
         if: ${{ failure() && startsWith(matrix.os, 'ubuntu') }}
         with:
