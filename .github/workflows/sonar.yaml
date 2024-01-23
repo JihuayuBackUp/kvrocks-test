@@ -81,8 +81,8 @@ jobs:
           sonar-scanner \
             --define sonar.cfamily.build-wrapper-output="sonarcloud-data" \
             --define sonar.coverageReportPaths=sonarcloud-data/coverage.xml \
-            --define sonar.projectKey=apache_kvrocks \
-            --define sonar.organization=apache \
+            --define sonar.projectKey=jihuayu_kvrocks-test \
+            --define sonar.organization=jihuayu \
             --define sonar.scm.revision=${{ github.event.workflow_run.head_sha }} \
             --define sonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }} \
             --define sonar.pullrequest.branch=${{ github.event.workflow_run.pull_requests[0].head.ref }} \
